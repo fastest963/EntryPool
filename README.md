@@ -58,6 +58,7 @@ server.on('connection', function(socket) {
         // if the array is now empty then we need to remove it
         if (EntryPool.cleanupEntries(connectionsPerIP[ip], now - maxAllowedTimeframe)) {
             pool.put(connectionsPerIP[ip]);
+            delete connectionsPerIP[ip];
         }
     });
 };
@@ -69,6 +70,7 @@ setInterval(function() {
     for (var ip in connectionsPerIP) {
         if (EntryPool.cleanupEntries(connectionsPerIP[ip], cleanupIfBefore)) {
             pool.put(connectionsPerIP[ip]);
+            delete connectionsPerIP[ip];
         }
     }
 }, 10 * maxAllowedTimeframe);
