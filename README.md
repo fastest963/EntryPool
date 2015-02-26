@@ -76,3 +76,5 @@ setInterval(function() {
 }, 10 * maxAllowedTimeframe);
 
 ```
+
+By [James Hartig](https://github.com/fastest963/)
