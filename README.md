@@ -1,6 +1,7 @@
 # EntryPool #
 
-Simple array pooling eith entry adding/counting for simple rate limiting.
+Simple array pooling with entry (i.e. time) adding/counting for simple rate limiting. See the example
+at the bottom for help with using this for rate limiting.
 
 ## Docs ##
 
