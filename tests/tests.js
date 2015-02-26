@@ -94,13 +94,11 @@ exports.arrCleanup = function(test) {
     EntryPool.addEntry(arr, 1);
     EntryPool.addEntry(arr, 2);
     EntryPool.addEntry(arr, 3);
-    test.strictEqual(EntryPool.cleanupEntries(arr, 3), false);
-    test.strictEqual(EntryPool.numEntries(arr), 1);
+    test.strictEqual(EntryPool.cleanupEntries(arr, 3), 1);
     test.strictEqual(arr[0], 3);
     test.strictEqual(arr[1], undefined);
     test.strictEqual(arr[2], undefined);
-    test.strictEqual(EntryPool.cleanupEntries(arr, 4), true);
-    test.strictEqual(EntryPool.numEntries(arr), 0);
+    test.strictEqual(EntryPool.cleanupEntries(arr, 4), 0);
     test.strictEqual(arr[0], undefined);
     test.done();
 };

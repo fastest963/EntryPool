@@ -108,7 +108,7 @@ Pool.cleanupEntries = function(arr, removeIfBefore) {
             j++;
         }
     }
-    return (j === 0);
+    return j;
 };
 
 //returns true if the array is now empty

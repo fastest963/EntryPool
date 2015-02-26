@@ -24,7 +24,7 @@ Returns the index at which `entry` was added or -1 if `array` is full.
 Removes `entry` to `array`. Returns `true` if `array` is now empty.
 
 ### EntryPool.cleanupEntries(array, maxEntry) ###
-Removes any entries less than `maxEntry` from `array`. Returns `true` if `array` is now empty.
+Removes any entries less than `maxEntry` from `array`. Returns number of entries left.
 
 ### EntryPool.numEntries(array) ###
 Removes the number of entries in `array`.
@@ -56,7 +56,7 @@ server.on('connection', function(socket) {
     }
     socket.on('close', function() {
         // if the array is now empty then we need to remove it
-        if (EntryPool.cleanupEntries(connectionsPerIP[ip], now - maxAllowedTimeframe)) {
+        if (EntryPool.cleanupEntries(connectionsPerIP[ip], now - maxAllowedTimeframe) === 0) {
             pool.put(connectionsPerIP[ip]);
             delete connectionsPerIP[ip];
         }
@@ -68,7 +68,7 @@ server.on('connection', function(socket) {
 setInterval(function() {
     var cleanupIfBefore = Date.now() - maxAllowedTimeframe;
     for (var ip in connectionsPerIP) {
-        if (EntryPool.cleanupEntries(connectionsPerIP[ip], cleanupIfBefore)) {
+        if (EntryPool.cleanupEntries(connectionsPerIP[ip], cleanupIfBefore) === 0) {
             pool.put(connectionsPerIP[ip]);
             delete connectionsPerIP[ip];
         }
