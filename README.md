@@ -5,8 +5,9 @@ at the bottom for help with using this for rate limiting.
 
 ## Docs ##
 
-### new EntryPool(initialSize, arrayLength) ###
-Returns a new pool of arrays of length `arrayLength` with an initial size of `initialSize`.
+### new EntryPool(initialSize, arrayLength[,stepSize]) ###
+Returns a new pool of arrays of length `arrayLength` with an initial size of `initialSize`. `stepSize`
+is used when adding to the poll and defaults to `initialSize` or "double pool".
 
 ### pool.get(array) ###
 Gets a new array of length `arrayLength` from the pool.
@@ -15,7 +16,10 @@ Gets a new array of length `arrayLength` from the pool.
 Puts back an array once its done being used.
 
 ### pool.add([num]) ###
-Adds `num` arrays of length `arrayLength` to the pool. If no `num` is passed, it will double the pool.
+Adds `num` arrays of length `arrayLength` to the pool. If no `num` is passed, it will use the step size.
+
+### pool.trim([minSize]) ###
+Reduces pool size to at least `minSize` (or 0) by removing unused arrays from the pool.
 
 ### EntryPool.addEntry(array, entry) ###
 Adds `entry` to `array`. You should add an entry for each thing you want to limit.

@@ -9,11 +9,21 @@ exports.poolGetEmpty = function(test) {
     test.done();
 };
 
+exports.poolGetEmptyStep = function(test) {
+    var pool = new EntryPool(0, 1, 1);
+    test.strictEqual(pool.size, 0);
+    test.notStrictEqual(pool.get(), undefined);
+    test.strictEqual(pool.size, 1);
+    test.strictEqual(pool.size, pool.pool.length);
+    test.done();
+};
+
 exports.poolAddGet = function(test) {
     var pool = new EntryPool(0, 1);
     test.strictEqual(pool.size, 0);
     pool.add(1);
     test.strictEqual(pool.size, 1);
+    test.strictEqual(pool.size, pool.pool.length);
     test.notStrictEqual(pool.get(), undefined);
     test.done();
 };
@@ -24,6 +34,18 @@ exports.poolGetNoneLeft = function(test) {
     test.strictEqual(pool.size, 1);
     test.notStrictEqual(pool.get(), undefined);
     test.strictEqual(pool.size, 2);
+    test.strictEqual(pool.size, pool.pool.length);
+    test.done();
+};
+
+exports.poolGetNoneLeftCustomStep = function(test) {
+    var pool = new EntryPool(1, 1, 3);
+    test.notStrictEqual(pool.get(), undefined);
+    test.strictEqual(pool.size, 1);
+    test.notStrictEqual(pool.get(), undefined);
+    //since we didn't put the original one back the size should be only 3 (step size)
+    test.strictEqual(pool.size, 4);
+    test.strictEqual(pool.size, pool.pool.length);
     test.done();
 };
 
@@ -130,5 +152,79 @@ exports.poolPutEmpties = function(test) {
     EntryPool.addEntry(arr, 1);
     pool.put(arr);
     test.strictEqual(EntryPool.numEntries(arr), 0);
+    test.done();
+};
+
+exports.poolPutEmpties = function(test) {
+    var pool = new EntryPool(1, 1),
+        arr = pool.get();
+    EntryPool.addEntry(arr, 1);
+    pool.put(arr);
+    test.strictEqual(EntryPool.numEntries(arr), 0);
+    test.done();
+};
+
+exports.poolPutInvalid = function(test) {
+    var pool = new EntryPool(0, 1);
+    test.throws(function() {
+        pool.put('test');
+    });
+    test.done();
+};
+
+exports.poolPutInvalidSize = function(test) {
+    var pool = new EntryPool(0, 1);
+    test.throws(function() {
+        pool.put(new Array(3));
+    });
+    test.done();
+};
+
+exports.poolPutPastEnd = function(test) {
+    var pool = new EntryPool(0, 1);
+    pool.put(new Array(1));
+    test.strictEqual(pool.size, 1);
+    test.done();
+};
+
+exports.poolTrimAll = function(test) {
+    var pool = new EntryPool(5, 1),
+        arr = pool.get();
+    pool.trim();
+    test.strictEqual(pool.size, 1);
+    test.strictEqual(pool.size, pool.pool.length);
+    pool.put(arr);
+    test.strictEqual(pool.size, 1);
+    test.done();
+};
+
+exports.poolTrimSome = function(test) {
+    var pool = new EntryPool(5, 1),
+        arr = pool.get();
+    pool.trim(3);
+    test.strictEqual(pool.size, 3);
+    test.strictEqual(pool.size, pool.pool.length);
+    pool.put(arr);
+    test.strictEqual(pool.size, 3);
+    test.done();
+};
+
+exports.poolTrimNone = function(test) {
+    var pool = new EntryPool(1, 1);
+    pool.trim(3);
+    test.strictEqual(pool.size, 1);
+    test.strictEqual(pool.size, pool.pool.length);
+    test.done();
+};
+
+exports.poolTrimNoneAvailable = function(test) {
+    var pool = new EntryPool(4, 1);
+    pool.get();
+    pool.get();
+    pool.get();
+    pool.get();
+    pool.trim();
+    test.strictEqual(pool.size, 4);
+    test.strictEqual(pool.size, pool.pool.length);
     test.done();
 };
