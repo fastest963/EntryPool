@@ -37,19 +37,40 @@ Pool.prototype.add = function(count) {
 Pool.prototype.trim = function(minSize) {
     var len = this.pool ? this.pool.length : 0,
         i = len - 1,
-        size = +minSize || 0;
+        size = +minSize || 0,
+        j = -1;
     if (size < 0) {
         throw new Error('Cannot trim to a negative size');
     }
-    for (;i >= size; i--) {
+    //the pool might look like [arr, arr, null, null, null, null, null, arr, arr]
+    //we want to convert it first to [null, null, null, null, null, arr, arr, arr, arr]
+
+    //first find the index of the first null (starting from the end)
+    for (; i >= size; i--) {
         if (this.pool[i] === null) {
+            j = i;
             break;
         }
     }
-    if (i + 1 < len) {
-        //substract one so we don't remove the current index
-        this.pool.splice(i + 1, len - i - 1);
-        this.size = i + 1;
+    //if we found any then start moving arrays back
+    if (j > -1) {
+        //find the first non-null before j and start putting them at j
+        for (; i >= 0 && j >= size; i--) {
+            if (this.pool[i] !== null) {
+                this.pool[j] = this.pool[i];
+                this.pool[i] = null;
+                j--;
+            }
+        }
+        //add one so we don't remove the current index (since j is pointed at the last null)
+        j += 1;
+    } else {
+        //since we didn't find any nulls before size, just delete from size onwards
+        j = size;
+    }
+    if (j >= size && j < len) {
+        this.pool.splice(j, len - j);
+        this.size = j;
     }
 };
 
@@ -75,7 +96,9 @@ Pool.prototype.get = function() {
 function emptyArray(arr) {
     var i = 0;
     for (; i < arr.length; i++) {
-        arr[i] = undefined;
+        if (arr[i] !== undefined) {
+            arr[i] = undefined;
+        }
     }
 }
 

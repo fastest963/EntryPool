@@ -198,6 +198,17 @@ exports.poolTrimAll = function(test) {
     test.done();
 };
 
+exports.poolTrimAllButOne = function(test) {
+    var pool = new EntryPool(5, 1),
+        arr = pool.get();
+    pool.trim(1);
+    test.strictEqual(pool.size, 1);
+    test.strictEqual(pool.size, pool.pool.length);
+    pool.put(arr);
+    test.strictEqual(pool.size, 1);
+    test.done();
+};
+
 exports.poolTrimSome = function(test) {
     var pool = new EntryPool(5, 1),
         arr = pool.get();
@@ -218,13 +229,35 @@ exports.poolTrimNone = function(test) {
 };
 
 exports.poolTrimNoneAvailable = function(test) {
-    var pool = new EntryPool(4, 1);
-    pool.get();
-    pool.get();
+    var pool = new EntryPool(4, 1),
+        arr1 = pool.get(),
+        arr2 = pool.get();
     pool.get();
     pool.get();
     pool.trim();
     test.strictEqual(pool.size, 4);
     test.strictEqual(pool.size, pool.pool.length);
+    //now put 2 back and try trimming again
+    pool.put(arr1);
+    pool.put(arr2);
+    pool.trim();
+    test.strictEqual(pool.size, 2);
+    test.strictEqual(pool.size, pool.pool.length);
+    test.done();
+};
+
+exports.poolTrimDoesntChangeOrder = function(test) {
+    var pool = new EntryPool(3, 1),
+        arr1 = pool.get(),
+        arr2 = pool.get();
+    pool.get();
+    pool.trim();
+    //now put 2 back and try trimming again
+    pool.put(arr1);
+    pool.put(arr2);
+    pool.trim(2);
+    test.strictEqual(pool.size, 2);
+    test.strictEqual(pool.size, pool.pool.length);
+    test.strictEqual(pool.get(), arr1);
     test.done();
 };
