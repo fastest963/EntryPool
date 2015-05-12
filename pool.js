@@ -1,3 +1,5 @@
+var EntryArray = require('./lib/array.js');
+
 function Pool(initialSize, arrayLen, stepSize) {
     if (arrayLen < 1) {
         throw new Error('Invalid arrayLen. Must be greater than 0');
@@ -29,7 +31,7 @@ Pool.prototype.add = function(count) {
     }
     //now add the new ones
     for (; i < finalCount; i++) {
-        this.pool[i] = new Array(this.arrLength);
+        this.pool[i] = new EntryArray(this.arrLength);
     }
     this.size = finalCount;
 };
@@ -93,25 +95,16 @@ Pool.prototype.get = function() {
     return arr;
 };
 
-function emptyArray(arr) {
-    var i = 0;
-    for (; i < arr.length; i++) {
-        if (arr[i] !== undefined) {
-            arr[i] = undefined;
-        }
-    }
-}
-
 Pool.prototype.put = function(arr) {
     var i = 0,
         len = this.pool ? this.pool.length : 0;
-    if (!Array.isArray(arr)) {
-        throw new TypeError('Non-array was sent to pool.put');
+    if (!(arr instanceof EntryArray)) {
+        throw new TypeError('Invalid array was sent to pool.put. Must be instance of EntryArray');
     }
-    if (arr.length != this.arrLength) {
+    if (arr.size != this.arrLength) {
         throw new Error('An array of invalid size was sent to pool.put');
     }
-    emptyArray(arr);
+    arr.empty();
     //put it back in the first available spot
     for (; i < len; i++) {
         if (this.pool[i] === null) {
@@ -127,84 +120,32 @@ Pool.prototype.put = function(arr) {
     this.size++;
 };
 
+/**
+ * Backwards-compatible methods
+ */
 Pool.numEntries = function(arr) {
-    var i = 0;
-    for (; i < arr.length; i++) {
-        if (arr[i] === undefined) {
-            break;
-        }
+    if (!(arr instanceof EntryArray)) {
+        throw new TypeError('Invalid array was sent to numEntries. Must be instance of EntryArray');
     }
-    return i;
+    return arr.numEntries();
 };
-
-//if the array is already full it will NOT add a time
-//returns index it was added at, -1 if not
-Pool.addEntry = function addEntry(arr, entry) {
-    if (entry === undefined) {
-        throw new TypeError('Entry cannot be undefined in addEntry');
+Pool.addEntry = function(arr, timestamp) {
+    if (!(arr instanceof EntryArray)) {
+        throw new TypeError('Invalid array was sent to addEntry. Must be instance of EntryArray');
     }
-    var i = 0;
-    for (; i < arr.length; i++) {
-        if (arr[i] === undefined) {
-            arr[i] = entry;
-            return i;
-        }
-    }
-    return -1;
+    return arr.addEntry(timestamp);
 };
-
-//returns number left in arr
-//if removeIfBefore is undefined, it'll delete all entries
 Pool.cleanupEntries = function(arr, removeIfBefore) {
-    if (removeIfBefore === undefined) {
-        emptyArray(arr);
-        return 0;
+    if (!(arr instanceof EntryArray)) {
+        throw new TypeError('Invalid array was sent to cleanupEntries. Must be instance of EntryArray');
     }
-    //we're looping through arr and if we find a entry less than the entry sent, we're removing it
-    //we need to keep all the data to the left so we're moving times back if they're still valid
-    var i = 0, j = 0;
-    for (; i < arr.length; i++) {
-        if (arr[i] === undefined) {
-            break;
-        }
-        if (arr[i] < removeIfBefore) {
-            arr[i] = undefined;
-        } else {
-            //if we need to move it back, do that now
-            if (i !== j) {
-                arr[j] = arr[i];
-                arr[i] = undefined;
-            }
-            j++;
-        }
-    }
-    return j;
+    return arr.cleanupEntries(removeIfBefore);
 };
-
-//returns true if the array is now empty
-Pool.removeEntry = function(arr, entry) {
-    if (entry === undefined) {
-        return (this.numEntries(arr) === 0);
+Pool.removeEntry = function(arr, timestamp) {
+    if (!(arr instanceof EntryArray)) {
+        throw new TypeError('Invalid array was sent to removeEntry. Must be instance of EntryArray');
     }
-    //we're looping through arr and if we find a entry equal than the entry sent, we're removing it
-    //we need to keep all the data to the left so we're moving times back if they're still valid
-    var i = 0, j = 0;
-    for (; i < arr.length; i++) {
-        if (arr[i] === undefined) {
-            break;
-        }
-        if (arr[i] === entry) {
-            arr[i] = undefined;
-        } else {
-            //if we need to move it back, do that now
-            if (i !== j) {
-                arr[j] = arr[i];
-                arr[i] = undefined;
-            }
-            j++;
-        }
-    }
-    return (j === 0);
+    return arr.removeEntry(timestamp);
 };
 
 module.exports = Pool;
