@@ -41,7 +41,7 @@ var connectionsPerIP = {},
     //only allow up to 5 connections every minute
     maxAllowedConnections = 5,
     maxAllowedTimeframe = 60 * 1000,
-    pool = new EntryPool(100, maxAllowedConnections),; 
+    pool = new EntryPool(100, maxAllowedConnections); 
 
 // server is a http.Server
 server.on('connection', function(socket) {
