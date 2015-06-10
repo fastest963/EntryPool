@@ -1,38 +1,43 @@
 # EntryPool #
 
-Simple array pooling with entry (i.e. time) adding/counting for simple rate limiting. See the example
-at the bottom for help with using this for rate limiting.
+Simple array pooling with entry (i.e. time) adding/counting for simple rate limiting. See
+the example at the bottom for help with using this for rate limiting.
 
-## Docs ##
+## EntryPool Methods ##
 
-### new EntryPool(initialSize, arrayLength[,stepSize]) ###
-Returns a new pool of arrays of length `arrayLength` with an initial size of `initialSize`. `stepSize`
-is used when adding to the poll and defaults to `initialSize` or "double pool".
+### pool = new EntryPool(initialSize, arrayLength[,stepSize]) ###
+Returns a new pool of arrays of length `arrayLength` with an initial size of `initialSize`.
+`stepSize` is used when adding to the poll and defaults to `initialSize` or "double pool".
 
-### pool.get(array) ###
-Gets a new array of length `arrayLength` from the pool.
+### pool.get() ###
+Gets a new `EntryArray` of length `arrayLength` from the pool.
 
 ### pool.put(array) ###
-Puts back an array once its done being used.
+Puts back an `EntryArray` once its done being used.
 
 ### pool.add([num]) ###
-Adds `num` arrays of length `arrayLength` to the pool. If no `num` is passed, it will use the step size.
+Adds `num` arrays of length `arrayLength` to the pool. If no `num` is passed, it will
+use the step size.
 
 ### pool.trim([minSize]) ###
 Reduces pool size to at least `minSize` (or 0) by removing unused arrays from the pool.
 
-### EntryPool.addEntry(array, entry) ###
-Adds `entry` to `array`. You should add an entry for each thing you want to limit.
-Returns the index at which `entry` was added or -1 if `array` is full.
+## EntryArray Methods ##
 
-### EntryPool.removeEntry(array, entry) ###
-Removes `entry` to `array`. Returns `true` if `array` is now empty.
+### arr.add(timestamp[, value]) ###
+Adds an entry to the array. You should add an entry for each thing you want to limit.
+Returns the index at which entry was added or -1 if array is full.
 
-### EntryPool.cleanupEntries(array, maxEntry) ###
-Removes any entries less than `maxEntry` from `array`. Returns number of entries left.
+### arr.remove([timestamp][, value]) ###
+Removes an entry from array. Returns `true` if array is now empty. `timestamp` and `value`
+are both optional and to omit `timestamp` but send `value` pass `undefined` as `timestamp`.
 
-### EntryPool.numEntries(array) ###
-Removes the number of entries in `array`.
+### arr.cleanup(maxEntry) ###
+Removes any entries with a timestamp older than `maxEntry` from array. Returns number of
+entries left.
+
+### arr.numEntries() ###
+Removes the number of entries in array.
 
 ## Example ##
 

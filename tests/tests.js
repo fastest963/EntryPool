@@ -61,8 +61,18 @@ exports.poolPutGet = function(test) {
 exports.arrAdd = function(test) {
     var pool = new EntryPool(1, 2),
         arr = pool.get();
-    test.strictEqual(EntryPool.addEntry(arr, 1), 0);
-    test.strictEqual(EntryPool.addEntry(arr, 2), 1);
+    test.strictEqual(arr.add(1), 0);
+    test.strictEqual(arr.add(2), 1);
+    test.strictEqual(arr.at(0), 1);
+    test.strictEqual(arr.at(1), 2);
+    test.done();
+};
+
+exports.arrAddValue = function(test) {
+    var pool = new EntryPool(1, 2),
+        arr = pool.get();
+    test.strictEqual(arr.add(1, 1), 0);
+    test.strictEqual(arr.add(2, 2), 1);
     test.strictEqual(arr.at(0), 1);
     test.strictEqual(arr.at(1), 2);
     test.done();
@@ -74,6 +84,9 @@ exports.arrAddUndefined = function(test) {
     test.throws(function() {
         EntryPool.addEntry(arr, undefined);
     });
+    test.throws(function() {
+        arr.add(undefined);
+    });
     test.done();
 };
 
@@ -81,21 +94,42 @@ exports.arrRemove = function(test) {
     var pool = new EntryPool(1, 1),
         arr = pool.get();
     EntryPool.addEntry(arr, 1);
-    test.strictEqual(EntryPool.removeEntry(arr, 2), false);
-    test.strictEqual(EntryPool.removeEntry(arr, 1), true);
-    test.strictEqual(EntryPool.numEntries(arr), 0);
-    test.strictEqual(EntryPool.removeEntry(arr, undefined), true);
+    test.strictEqual(arr.remove(2), false);
+    test.strictEqual(arr.remove(1), true);
+    test.strictEqual(arr.numEntries(arr), 0);
+    test.strictEqual(arr.remove(undefined), true);
+    test.done();
+};
+
+exports.arrRemoveValues = function(test) {
+    var pool = new EntryPool(1, 3),
+        arr = pool.get();
+    arr.add(999, 1);
+    arr.add(2, 8);
+    arr.add(3, 9);
+    test.strictEqual(arr.remove(5), false); //matches nothing
+    test.strictEqual(arr.numEntries(), 3);
+    test.strictEqual(arr.remove(1), false); //matches nothing unless mismatch value/timestamp
+    test.strictEqual(arr.numEntries(), 3);
+    test.strictEqual(arr.remove(undefined, 1), false); //matches on value
+    test.strictEqual(arr.numEntries(), 2);
+    test.strictEqual(arr.remove(2), false); //matches on timestamp
+    test.strictEqual(arr.numEntries(), 1);
+    test.strictEqual(arr.remove(3, 3), false); //matches nothing unless value ignored
+    test.strictEqual(arr.numEntries(), 1);
+    test.strictEqual(arr.remove(3, 9), true); //matches on value and timestamp
+    test.strictEqual(arr.numEntries(), 0);
     test.done();
 };
 
 exports.arrRemoveShifts = function(test) {
     var pool = new EntryPool(1, 3),
         arr = pool.get();
-    EntryPool.addEntry(arr, 1);
-    EntryPool.addEntry(arr, 2);
-    EntryPool.addEntry(arr, 3);
-    EntryPool.removeEntry(arr, 1);
-    test.strictEqual(EntryPool.numEntries(arr), 2);
+    arr.add(1);
+    arr.add(2);
+    arr.add(3);
+    arr.remove(1);
+    test.strictEqual(arr.numEntries(), 2);
     test.strictEqual(arr.at(0), 2);
     test.strictEqual(arr.at(1), 3);
     test.strictEqual(arr.at(2), undefined);
@@ -105,8 +139,8 @@ exports.arrRemoveShifts = function(test) {
 exports.arrAddOverLimit = function(test) {
     var pool = new EntryPool(1, 1),
         arr = pool.get();
-    EntryPool.addEntry(arr, 1);
-    test.strictEqual(EntryPool.addEntry(arr, 2), -1);
+    arr.add(arr, 1);
+    test.strictEqual(arr.add(2), -1);
     test.strictEqual(arr.at(0), 1);
     test.strictEqual(arr.at(1), undefined);
     test.done();
@@ -115,24 +149,24 @@ exports.arrAddOverLimit = function(test) {
 exports.arrNumEntries = function(test) {
     var pool = new EntryPool(1, 1),
         arr = pool.get();
-    EntryPool.addEntry(arr, 1);
-    test.strictEqual(EntryPool.numEntries(arr), 1);
+    arr.add(1);
+    test.strictEqual(arr.numEntries(), 1);
     test.done();
 };
 
 exports.arrCleanup = function(test) {
     var pool = new EntryPool(1, 3),
         arr = pool.get();
-    EntryPool.addEntry(arr, 1);
-    EntryPool.addEntry(arr, 2);
-    EntryPool.addEntry(arr, 3);
-    test.strictEqual(EntryPool.cleanupEntries(arr, 3), 1);
-    test.strictEqual(EntryPool.numEntries(arr), 1);
+    arr.add(1);
+    arr.add(2);
+    arr.add(3);
+    test.strictEqual(arr.cleanup(3), 1);
+    test.strictEqual(arr.numEntries(), 1);
     test.strictEqual(arr.at(0), 3);
     test.strictEqual(arr.at(1), undefined);
     test.strictEqual(arr.at(2), undefined);
-    test.strictEqual(EntryPool.cleanupEntries(arr, 4), 0);
-    test.strictEqual(EntryPool.numEntries(arr), 0);
+    test.strictEqual(arr.cleanup(4), 0);
+    test.strictEqual(arr.numEntries(), 0);
     test.strictEqual(arr.at(0), undefined);
     test.done();
 };
@@ -140,27 +174,27 @@ exports.arrCleanup = function(test) {
 exports.arrCleanupUndefined = function(test) {
     var pool = new EntryPool(1, 1),
         arr = pool.get();
-    EntryPool.addEntry(arr, 1);
-    test.strictEqual(EntryPool.cleanupEntries(arr, undefined), 0);
-    test.strictEqual(EntryPool.numEntries(arr), 0);
+    arr.add(1);
+    test.strictEqual(arr.cleanup(undefined), 0);
+    test.strictEqual(arr.numEntries(), 0);
     test.done();
 };
 
 exports.poolPutEmpties = function(test) {
     var pool = new EntryPool(1, 1),
         arr = pool.get();
-    EntryPool.addEntry(arr, 1);
+    arr.add(1);
     pool.put(arr);
-    test.strictEqual(EntryPool.numEntries(arr), 0);
+    test.strictEqual(arr.numEntries(), 0);
     test.done();
 };
 
 exports.poolPutEmpties = function(test) {
     var pool = new EntryPool(1, 1),
         arr = pool.get();
-    EntryPool.addEntry(arr, 1);
+    arr.add(1);
     pool.put(arr);
-    test.strictEqual(EntryPool.numEntries(arr), 0);
+    test.strictEqual(arr.numEntries(), 0);
     test.done();
 };
 
