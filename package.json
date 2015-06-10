@@ -1,6 +1,6 @@
 {
   "name": "entrypool",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Array pooling for easier rate limiting",
   "main": "pool.js",
   "directories": {
@@ -16,7 +16,12 @@
     "type": "git",
     "url": "git://github.com/fastest963/EntryPool.git"
   },
-  "keywords": ["rate-limit", "ratelimit", "pool", "array"],
+  "keywords": [
+    "rate-limit",
+    "ratelimit",
+    "pool",
+    "array"
+  ],
   "author": "James Hartig <fastest963@gmail.com>",
   "license": "MIT",
   "readmeFilename": "README.md"
