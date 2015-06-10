@@ -56,17 +56,17 @@ server.on('connection', function(socket) {
         connectionsPerIP[ip] = pool.get();
     } else {
         // remove any entries older than the allowed timeframe
-        EntryPool.cleanupEntries(connectionsPerIP[ip], now - maxAllowedTimeframe);
+        connectionsPerIP[ip].cleanup(now - maxAllowedTimeframe);
     }
     // store that they just connected
-    if (EntryPool.addEntry(connectionsPerIP[ip], now) < 0) {
+    if (connectionsPerIP[ip].add(now) < 0) {
         // the user is over the rate-limit so end the connection immediately 
         socket.end();
         return;
     }
     socket.on('close', function() {
         // if the array is now empty then we need to remove it
-        if (EntryPool.cleanupEntries(connectionsPerIP[ip], now - maxAllowedTimeframe) === 0) {
+        if (connectionsPerIP[ip].cleanup(now - maxAllowedTimeframe) === 0) {
             pool.put(connectionsPerIP[ip]);
             delete connectionsPerIP[ip];
         }
@@ -78,7 +78,7 @@ server.on('connection', function(socket) {
 setInterval(function() {
     var cleanupIfBefore = Date.now() - maxAllowedTimeframe;
     for (var ip in connectionsPerIP) {
-        if (EntryPool.cleanupEntries(connectionsPerIP[ip], cleanupIfBefore) === 0) {
+        if (connectionsPerIP[ip].cleanup(cleanupIfBefore) === 0) {
             pool.put(connectionsPerIP[ip]);
             delete connectionsPerIP[ip];
         }
