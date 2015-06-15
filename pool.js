@@ -114,7 +114,7 @@ Pool.prototype.put = function(arr) {
     }
     //we didn't have room for it; add it to the end
     if (this.pool == null) {
-        this.pool = []
+        this.pool = [];
     }
     this.pool.push(arr);
     this.size++;
